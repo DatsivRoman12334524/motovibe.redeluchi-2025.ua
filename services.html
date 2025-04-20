@@ -1,0 +1,161 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мотоцикли - Сервіс</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #e5e5e5;
+    }
+
+    /* Стилі для іконок і контейнерів */
+.bg-gray-800 {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bg-gray-800:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+i {
+  flex-shrink: 0; /* Запобігає стисненню іконки */
+}
+
+/* Додаткові стилі для адаптивності */
+@media (max-width: 640px) {
+  i {
+    font-size: 1.5rem; /* Зменшуємо іконки на мобільних */
+  }
+}
+  </style>
+</head>
+<body class="font-sans">
+  <!-- Навігація -->
+  <nav class="fixed top-0 w-full bg-gray-900/80 backdrop-blur-md z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <a href="index.html" class="flex-shrink-0 flex items-center">
+            <span class="text-2xl font-bold text-red-600">MotoVibe</span>
+          </a>
+        </div>
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <a href="index.html" class="text-gray-300 hover:text-red-600 inline-flex items-center px-1 pt-1 text-sm font-medium">Головна</a>
+          <a href="about.html" class="text-gray-300 hover:text-red-600 inline-flex items-center px-1 pt-1 text-sm font-medium">Про нас</a>
+          <a href="models.html" class="text-gray-300 hover:text-red-600 inline-flex items-center px-1 pt-1 text-sm font-medium">Моделі</a>
+          <a href="services.html" class="border-red-600 text-red-600 border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium">Сервіс</a>
+          <a href="news.html" class="text-gray-300 hover:text-red-600 inline-flex items-center px-1 pt-1 text-sm font-medium">Новини</a>
+          <a href="contacts.html" class="text-gray-300 hover:text-red-600 inline-flex items-center px-1 pt-1 text-sm font-medium">Контакти</a>
+        </div>
+        <div class="-mr-2 flex items-center sm:hidden">
+          <button id="mobile-menu-btn" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-red-600 focus:outline-none">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden sm:hidden">
+      <div class="pt-2 pb-3 space-y-1">
+        <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-red-600 block pl-3 pr-4 py-2 text-base font-medium">Головна</a>
+        <a href="about.html" class="text-gray-300 hover:bg-gray-700 hover:text-red-600 block pl-3 pr-4 py-2 text-base font-medium">Про нас</a>
+        <a href="models.html" class="text-gray-300 hover:bg-gray-700 hover:text-red-600 block pl-3 pr-4 py-2 textSalty Dog-base font-medium">Моделі</a>
+        <a href="services.html" class="bg-gray-900 text-red-600 block pl-3 pr-4 py-2 text-base font-medium">Сервіс</a>
+        <a href="news.html" class="text-gray-300 hover:bg-gray-700 hover:text-red-600 block pl-3 pr-4 py-2 text-base font-medium">Новини</a>
+        <a href="contacts.html" class="text-gray-300 hover:bg-gray-700 hover:text-red-600 block pl-3 pr-4 py-2 text-base font-medium">Контакти</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Секція Сервіс -->
+  <section class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-center mb-12">Наші послуги</h1>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg flex items-start">
+          <i class="fas fa-tools text-2xl text-blue-500 mr-4"></i>
+          <div>
+            <h3 class="text-xl font-bold">Технічне обслуговування</h3>
+            <p class="text-gray-400 mt-2">Регулярне ТО для забезпечення ідеального стану вашого мотоцикла.</p>
+          </div>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg flex items-start">
+          <i class="fas fa-paint-roller text-2xl text-blue-500 mr-4"></i>
+          <div>
+            <h3 class="text-xl font-bold">Тюнінг</h3>
+            <p class="text-gray-400 mt-2">Персоналізація мотоцикла: від фарбування до встановлення нових компонентів.</p>
+          </div>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg flex items-start">
+          <i class="fas fa-wrench text-2xl text-blue-500 mr-4"></i>
+          <div>
+            <h3 class="text-xl font-bold">Ремонт</h3>
+            <p class="text-gray-400 mt-2">Швидкий та якісний ремонт будь-якої складності.</p>
+          </div>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg flex items-start">
+          <i class="fas fa-cogs text-2xl text-blue-500 mr-4"></i>
+          <div>
+            <h3 class="text-xl font-bold">Запчастини</h3>
+            <p class="text-gray-400 mt-2">Оригінальні запчастини для всіх моделей MotoVibe.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+
+
+  <script>
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  </script>
+</body>
+</html>
